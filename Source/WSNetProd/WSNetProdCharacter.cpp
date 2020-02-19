@@ -11,7 +11,9 @@
 #include "Net/UnrealNetwork.h"
 #include "Engine/Engine.h"
 #include "CharacterProjectile.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "TimerManager.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AWSNetProdCharacter
@@ -39,6 +41,7 @@ AWSNetProdCharacter::AWSNetProdCharacter()
 	// Create a camera boom (pulls in towards the player if there is a collision)
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
+	CameraBoom->SetRelativeLocation(FVector(0.0f, 0.0f, 60.0f));
 	CameraBoom->TargetArmLength = 0.0f; // The camera follows at this distance behind the character	
 	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
 
@@ -46,6 +49,13 @@ AWSNetProdCharacter::AWSNetProdCharacter()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+
+	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
+	FirstPersonMesh->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the mesh to the end of the boom and let the boom adjust to match the controller orientation
+
+	// set mesh location/rotation in cap comp
+	this->GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -95.0f));
+	this->GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
 
 	//Initialize the player's Health
 	MaxHealth = 100.0f;
@@ -100,10 +110,13 @@ void AWSNetProdCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Toggle visibility of skel mesh on our self
+	// Toggle visibility of skel mesh and arm on our self
 	AWSNetProdCharacter* PlayerCharacter = Cast<AWSNetProdCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (PlayerCharacter == this) {
 		this->GetMesh()->ToggleVisibility(false);
+	} else
+	{
+		FirstPersonMesh->ToggleVisibility(false);
 	}
 }
 
@@ -111,7 +124,6 @@ void AWSNetProdCharacter::BeginPlay()
 void AWSNetProdCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	this->GetMesh()->SetWorldRotation(CameraBoom->GetComponentRotation());
 }
 
 void AWSNetProdCharacter::OnResetVR()

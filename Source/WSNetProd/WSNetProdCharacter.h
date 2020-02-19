@@ -19,6 +19,10 @@ class AWSNetProdCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
+	/** First person mesh */
+	UPROPERTY(VisibleAnywhere)
+		class USkeletalMeshComponent* FirstPersonMesh;
+
 public:
 	AWSNetProdCharacter();
 
