@@ -1,14 +1,14 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Insert Your Copyright Here
 
 using UnrealBuildTool;
 using System.Collections.Generic;
 
-[SupportedPlatforms(UnrealPlatformClass.Server)]
-public class WSNetProdServerTarget : TargetRules   // Change this line as shown previously
+public class WSNetProdServerTarget : TargetRules
 {
-       public WSNetProdServerTarget(TargetInfo Target) : base(Target)  // Change this line as shown previously
-       {
+    public WSNetProdServerTarget(TargetInfo Target) : base(Target)
+    {
         Type = TargetType.Server;
-        ExtraModuleNames.Add("WSNetProd");    // Change this line as shown previously
-       }
+
+        ExtraModuleNames.Add("WSNetProd"); // This would be your project module if not BP only
+    }
 }
