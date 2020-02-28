@@ -19,10 +19,6 @@ class AWSNetProdCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	/** First person mesh */
-	UPROPERTY(VisibleAnywhere)
-		class USkeletalMeshComponent* FirstPersonMesh;
-
 public:
 	AWSNetProdCharacter();
 
@@ -52,6 +48,18 @@ public:
 	/** Event for taking damage. Overridden from APawn.*/
 	UFUNCTION(BlueprintCallable, Category = "Health")
 		float TakeDamage(float DamageTaken, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
+	/** First person mesh */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class USkeletalMeshComponent* FirstPersonMesh;
+
+	/** First person mesh */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class USkeletalMeshComponent* FirstPersonGunMesh;
+
+	/** First person mesh */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class USkeletalMeshComponent* ThirdPersonGunMesh;
 
 protected:
 	// Called when the game starts or when spawned

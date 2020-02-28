@@ -53,6 +53,12 @@ AWSNetProdCharacter::AWSNetProdCharacter()
 	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
 	FirstPersonMesh->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the mesh to the end of the boom and let the boom adjust to match the controller orientation
 
+	FirstPersonGunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonGunMesh"));
+	FirstPersonGunMesh->SetupAttachment(FirstPersonMesh);
+
+	ThirdPersonGunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ThirdPersonGunMesh"));
+	ThirdPersonGunMesh->SetupAttachment(GetMesh());
+
 	// set mesh location/rotation in cap comp
 	this->GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -95.0f));
 	this->GetMesh()->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
