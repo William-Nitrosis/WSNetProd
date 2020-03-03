@@ -120,9 +120,11 @@ void AWSNetProdCharacter::BeginPlay()
 	AWSNetProdCharacter* PlayerCharacter = Cast<AWSNetProdCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0));
 	if (PlayerCharacter == this) {
 		this->GetMesh()->ToggleVisibility(false);
+		ThirdPersonGunMesh->ToggleVisibility(false);
 	} else
 	{
 		FirstPersonMesh->ToggleVisibility(false);
+		FirstPersonGunMesh->ToggleVisibility(false);
 	}
 }
 
