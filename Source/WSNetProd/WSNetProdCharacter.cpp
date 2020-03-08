@@ -10,7 +10,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Engine/Engine.h"
-#include "CharacterProjectile.h"
+#include "WeaponBase.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
@@ -53,8 +53,11 @@ AWSNetProdCharacter::AWSNetProdCharacter()
 	FirstPersonMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonMesh"));
 	FirstPersonMesh->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the mesh to the end of the boom and let the boom adjust to match the controller orientation
 
-	FirstPersonGunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonGunMesh"));
-	FirstPersonGunMesh->SetupAttachment(FirstPersonMesh);
+	FirstPersonGunActorSlot1 = CreateDefaultSubobject<UChildActorComponent>(TEXT("FirstPersonGunActorSlot1"));
+	FirstPersonGunActorSlot1->SetupAttachment(FirstPersonMesh);
+
+	FirstPersonGunActorSlot2 = CreateDefaultSubobject<UChildActorComponent>(TEXT("FirstPersonGunActorSlot2"));
+	FirstPersonGunActorSlot2->SetupAttachment(FirstPersonMesh);
 
 	ThirdPersonGunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ThirdPersonGunMesh"));
 	ThirdPersonGunMesh->SetupAttachment(GetMesh());
@@ -70,13 +73,8 @@ AWSNetProdCharacter::AWSNetProdCharacter()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 
-	//Initialize projectile class
-	ProjectileClass = ACharacterProjectile::StaticClass();
-	//Initialize fire rate
-	FireRate = 0.25f;
-	bIsFiringWeapon = false;
-
-
+	
+	CurrentlyEquipped = FirstPersonGunActorSlot1;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -104,11 +102,9 @@ void AWSNetProdCharacter::SetupPlayerInputComponent(class UInputComponent* Playe
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &AWSNetProdCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &AWSNetProdCharacter::TouchStopped);
 
-	// VR headset functionality
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AWSNetProdCharacter::OnResetVR);
-
 	// Handle firing projectiles
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AWSNetProdCharacter::StartFire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AWSNetProdCharacter::StartFiring);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AWSNetProdCharacter::StopFiring);
 }
 
 
@@ -124,7 +120,8 @@ void AWSNetProdCharacter::BeginPlay()
 	} else
 	{
 		FirstPersonMesh->ToggleVisibility(false);
-		FirstPersonGunMesh->ToggleVisibility(false);
+		FirstPersonGunActorSlot1->ToggleVisibility(false);
+		FirstPersonGunActorSlot2->ToggleVisibility(false);
 	}
 }
 
@@ -132,11 +129,11 @@ void AWSNetProdCharacter::BeginPlay()
 void AWSNetProdCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-}
-
-void AWSNetProdCharacter::OnResetVR()
-{
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
+	if (bFiring)
+	{
+		Cast<AWeaponBase>(CurrentlyEquipped->GetChildActor())->HandleInput();
+	}
+	
 }
 
 void AWSNetProdCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
@@ -249,30 +246,12 @@ float AWSNetProdCharacter::TakeDamage(float DamageTaken, struct FDamageEvent con
 	return damageApplied;
 }
 
-void AWSNetProdCharacter::StartFire()
+void AWSNetProdCharacter::StartFiring()
 {
-	if (!bIsFiringWeapon)
-	{
-		bIsFiringWeapon = true;
-		UWorld* World = GetWorld();
-		World->GetTimerManager().SetTimer(FiringTimer, this, &AWSNetProdCharacter::StopFire, FireRate, false);
-		HandleFire();
-	}
+	bFiring = true;
 }
 
-void AWSNetProdCharacter::StopFire()
+void AWSNetProdCharacter::StopFiring()
 {
-	bIsFiringWeapon = false;
-}
-
-void AWSNetProdCharacter::HandleFire_Implementation()
-{
-	FVector spawnLocation = GetActorLocation() + (GetControlRotation().Vector()  * 100.0f) + (GetActorUpVector() * 50.0f);
-	FRotator spawnRotation = GetControlRotation();
-
-	FActorSpawnParameters spawnParameters;
-	spawnParameters.Instigator = Instigator;
-	spawnParameters.Owner = this;
-
-	ACharacterProjectile * spawnedProjectile = GetWorld()->SpawnActor<ACharacterProjectile>(spawnLocation, spawnRotation, spawnParameters);
+	bFiring = false;
 }

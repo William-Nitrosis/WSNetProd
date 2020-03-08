@@ -53,21 +53,29 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class USkeletalMeshComponent* FirstPersonMesh;
 
-	/** First person mesh */
+	/** First person gun actor - slot 1 */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-		class USkeletalMeshComponent* FirstPersonGunMesh;
+		class UChildActorComponent* FirstPersonGunActorSlot1;
 
-	/** First person mesh */
+	/** First person gun actor - slot 1 */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class UChildActorComponent* FirstPersonGunActorSlot2;
+
+	/** Third person gun mesh */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class USkeletalMeshComponent* ThirdPersonGunMesh;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class UChildActorComponent* CurrentlyEquipped;
+
+	/** Firing variable */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		bool bFiring;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	/** Resets HMD orientation in VR. */
-	void OnResetVR();
-
+	
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
 
@@ -107,30 +115,13 @@ protected:
 	/** Response to health being updated. Called on the server immediately after modification, and on clients in response to a RepNotify*/
 	void OnHealthUpdate();
 
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay|Projectile")
-		TSubclassOf<class ACharacterProjectile> ProjectileClass;
-
-	/** Delay between shots in seconds. Used to control fire rate for our test projectile, but also to prevent an overflow of server functions from binding SpawnProjectile directly to input.*/
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-		float FireRate;
-
-	/** If true, we are in the process of firing projectiles. */
-	bool bIsFiringWeapon;
-
 	/** Function for beginning weapon fire.*/
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-		void StartFire();
+		void StartFiring();
 
 	/** Function for ending weapon fire. Once this is called, the player can use StartFire again.*/
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
-		void StopFire();
-
-	/** Server function for spawning projectiles.*/
-	UFUNCTION(Server, Reliable)
-		void HandleFire();
-
-	/** A timer handle used for providing the fire rate delay in-between spawns.*/
-	FTimerHandle FiringTimer;
+		void StopFiring();
 
 protected:
 	// APawn interface
