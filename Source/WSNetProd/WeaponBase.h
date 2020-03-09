@@ -24,12 +24,21 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class USceneComponent* BarrelParticleEmitterLocation;
 
+	UFUNCTION(BlueprintCallable)
+		void HandleInput();
+
+
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
 	/** Damage */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gun stats")
 		float Damage = 1.0f;
-	
+
 	/** Fire rate */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category="Gun stats")
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gun stats")
 		float FireRate = 0.25f;
 
 	FTimerHandle FiringTimer;
@@ -51,9 +60,6 @@ public:
 		float BulletDistance = 5000.0f;
 
 	UFUNCTION(BlueprintCallable)
-		void HandleInput();
-
-	UFUNCTION(BlueprintCallable)
 		void StopFire();
 
 	UFUNCTION(BlueprintCallable)
@@ -62,11 +68,6 @@ public:
 	bool bCanFireGun = true;
 
 	AWSNetProdCharacter* PlayerCharacter;
-
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-
 
 
 public:	

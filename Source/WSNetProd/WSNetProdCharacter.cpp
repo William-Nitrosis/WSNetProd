@@ -129,10 +129,7 @@ void AWSNetProdCharacter::BeginPlay()
 void AWSNetProdCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	if (bFiring)
-	{
-		Cast<AWeaponBase>(CurrentlyEquipped->GetChildActor())->HandleInput();
-	}
+	HandleSlotInput_Implementation();
 	
 }
 
@@ -254,4 +251,13 @@ void AWSNetProdCharacter::StartFiring()
 void AWSNetProdCharacter::StopFiring()
 {
 	bFiring = false;
+}
+
+void AWSNetProdCharacter::HandleSlotInput_Implementation()
+{
+	AWeaponBase* CWeapon = Cast<AWeaponBase>(CurrentlyEquipped->GetChildActor());
+	if (bFiring && CWeapon != nullptr)
+	{
+		CWeapon->HandleInput();
+	}
 }

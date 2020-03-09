@@ -2,6 +2,9 @@
 
 #include "Engine.h"
 #include "TimerManager.h"
+#include "GameFramework/DamageType.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "Engine/Classes/Engine/World.h"
 #include "WeaponBase.h"
 
@@ -63,25 +66,34 @@ void AWeaponBase::FireBullet()
 {
 	TArray<FHitResult> MultiHit;
 	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	Params.AddIgnoredActor(PlayerCharacter);
 	GetWorld()->LineTraceMultiByChannel(
 		MultiHit,
 		PlayerCharacter->GetFollowCamera()->GetComponentLocation(),
 		(PlayerCharacter->GetFollowCamera()->GetComponentLocation() + (PlayerCharacter->GetFollowCamera()->GetForwardVector() * BulletDistance)),
-		ECC_Visibility,
+		ECC_WorldDynamic,
 		Params);
 
-	/*
+	DrawDebugLine(GetWorld(), PlayerCharacter->GetActorLocation(), (PlayerCharacter->GetFollowCamera()->GetComponentLocation() + (PlayerCharacter->GetFollowCamera()->GetForwardVector() * BulletDistance)), FColor::Green, false, 1, 0, 5);
 
-	
-	for (auto hit : MultiHit)
+	for (auto Hit : MultiHit)
 	{
-		PlayerCharacter = Cast<AWSNetProdCharacter>(hit.Actor);
-		if (PlayerCharacter != nullptr)
+		//"MyCharacter's Name is %s"
+		UE_LOG(LogTemp, Warning, TEXT("ACTOR HIT %s"), *Hit.Actor->GetName());
+		
+		if (IsValid(Cast<AWSNetProdCharacter>(Hit.Actor)))
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("player hit"));
+
+			// Create a damage event  
+			TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
+			FDamageEvent DamageEvent(ValidDamageTypeClass);
+			Cast<AWSNetProdCharacter>(Hit.Actor)->TakeDamage(Damage, DamageEvent, GetWorld()->GetFirstPlayerController(), this);
+	
 		}
 	}
-	*/
+
+	MultiHit.Empty();
 	
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("Shot fired"));
 }

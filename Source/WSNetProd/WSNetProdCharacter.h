@@ -123,6 +123,9 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 		void StopFiring();
 
+	UFUNCTION(Server, Reliable)
+		void HandleSlotInput();
+
 protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
