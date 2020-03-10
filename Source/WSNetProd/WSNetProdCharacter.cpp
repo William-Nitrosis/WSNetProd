@@ -5,6 +5,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
+#include "Components/BoxComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
@@ -61,6 +62,23 @@ AWSNetProdCharacter::AWSNetProdCharacter()
 
 	ThirdPersonGunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("ThirdPersonGunMesh"));
 	ThirdPersonGunMesh->SetupAttachment(GetMesh());
+
+	CBoxHead = CreateDefaultSubobject<UBoxComponent>(TEXT("CBoxHead"));
+	CBoxHead->SetupAttachment(GetMesh());
+	CBoxTorso = CreateDefaultSubobject<UBoxComponent>(TEXT("CBoxTorso"));
+	CBoxTorso->SetupAttachment(GetMesh());
+	CBoxLeftArmUpper = CreateDefaultSubobject<UBoxComponent>(TEXT("CBoxLeftArmUpper"));
+	CBoxLeftArmUpper->SetupAttachment(GetMesh());
+	CBoxLeftArmLower = CreateDefaultSubobject<UBoxComponent>(TEXT("CBoxLeftArmLower"));
+	CBoxLeftArmLower->SetupAttachment(GetMesh());
+	CBoxRightArmUpper = CreateDefaultSubobject<UBoxComponent>(TEXT("CBoxRightArmUpper"));
+	CBoxRightArmUpper->SetupAttachment(GetMesh());
+	CBoxRightArmLower = CreateDefaultSubobject<UBoxComponent>(TEXT("CBoxRightArmLower"));
+	CBoxRightArmLower->SetupAttachment(GetMesh());
+	CBoxLeftLeg = CreateDefaultSubobject<UBoxComponent>(TEXT("CBoxLeftLeg"));
+	CBoxLeftLeg->SetupAttachment(GetMesh());
+	CBoxRightLeg = CreateDefaultSubobject<UBoxComponent>(TEXT("CBoxRightLeg"));
+	CBoxRightLeg->SetupAttachment(GetMesh());
 
 	// set mesh location/rotation in cap comp
 	this->GetMesh()->SetRelativeLocation(FVector(0.0f, 0.0f, -95.0f));

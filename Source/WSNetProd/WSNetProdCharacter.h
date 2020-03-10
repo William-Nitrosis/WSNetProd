@@ -68,6 +68,31 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class UChildActorComponent* CurrentlyEquipped;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class UBoxComponent* CBoxHead;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class UBoxComponent* CBoxTorso;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class UBoxComponent* CBoxLeftArmUpper;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class UBoxComponent* CBoxLeftArmLower;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class UBoxComponent* CBoxRightArmUpper;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class UBoxComponent* CBoxRightArmLower;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class UBoxComponent* CBoxLeftLeg;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class UBoxComponent* CBoxRightLeg;
+	
+
 	/** Firing variable */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		bool bFiring;

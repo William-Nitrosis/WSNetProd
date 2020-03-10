@@ -65,17 +65,23 @@ void AWeaponBase::StopFire()
 void AWeaponBase::FireBullet()
 {
 	TArray<FHitResult> MultiHit;
+	FVector BulletStart = PlayerCharacter->GetFollowCamera()->GetComponentLocation();
+	FVector BulletEnd = PlayerCharacter->GetFollowCamera()->GetComponentLocation() + (PlayerCharacter->GetFollowCamera()->GetForwardVector() * BulletDistance);
+	FCollisionObjectQueryParams Objects;
 	FCollisionQueryParams Params;
+	
 	Params.AddIgnoredActor(this);
 	Params.AddIgnoredActor(PlayerCharacter);
-	GetWorld()->LineTraceMultiByChannel(
+	/*GetWorld()->LineTraceMultiByChannel(
 		MultiHit,
 		PlayerCharacter->GetFollowCamera()->GetComponentLocation(),
 		(PlayerCharacter->GetFollowCamera()->GetComponentLocation() + (PlayerCharacter->GetFollowCamera()->GetForwardVector() * BulletDistance)),
 		ECC_WorldDynamic,
-		Params);
+		Params);*/
 
-	DrawDebugLine(GetWorld(), PlayerCharacter->GetActorLocation(), (PlayerCharacter->GetFollowCamera()->GetComponentLocation() + (PlayerCharacter->GetFollowCamera()->GetForwardVector() * BulletDistance)), FColor::Green, false, 1, 0, 5);
+	GetWorld()->LineTraceMultiByObjectType(MultiHit, BulletStart, BulletEnd, Objects, Params);
+
+	DrawDebugLine(GetWorld(), PlayerCharacter->GetFollowCamera()->GetComponentLocation(), (PlayerCharacter->GetFollowCamera()->GetComponentLocation() + (PlayerCharacter->GetFollowCamera()->GetForwardVector() * BulletDistance)), FColor::Green, false, 10, 0, 5);
 
 	for (auto Hit : MultiHit)
 	{
@@ -85,6 +91,8 @@ void AWeaponBase::FireBullet()
 		if (IsValid(Cast<AWSNetProdCharacter>(Hit.Actor)))
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("player hit"));
+			
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *Hit.Component->GetName());
 
 			// Create a damage event  
 			TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
