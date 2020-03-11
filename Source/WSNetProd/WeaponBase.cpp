@@ -6,6 +6,8 @@
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Classes/Engine/World.h"
+#include "Engine/World.h"
+#include "CollisionQueryParams.h"
 #include "WeaponBase.h"
 
 
@@ -65,6 +67,7 @@ void AWeaponBase::StopFire()
 void AWeaponBase::FireBullet()
 {
 	TArray<FHitResult> MultiHit;
+	FHitResult SingleHit;
 	FVector BulletStart = PlayerCharacter->GetFollowCamera()->GetComponentLocation();
 	FVector BulletEnd = PlayerCharacter->GetFollowCamera()->GetComponentLocation() + (PlayerCharacter->GetFollowCamera()->GetForwardVector() * BulletDistance);
 	FCollisionObjectQueryParams Objects;
@@ -72,36 +75,38 @@ void AWeaponBase::FireBullet()
 	
 	Params.AddIgnoredActor(this);
 	Params.AddIgnoredActor(PlayerCharacter);
-	/*GetWorld()->LineTraceMultiByChannel(
-		MultiHit,
-		PlayerCharacter->GetFollowCamera()->GetComponentLocation(),
-		(PlayerCharacter->GetFollowCamera()->GetComponentLocation() + (PlayerCharacter->GetFollowCamera()->GetForwardVector() * BulletDistance)),
-		ECC_WorldDynamic,
-		Params);*/
 
-	GetWorld()->LineTraceMultiByObjectType(MultiHit, BulletStart, BulletEnd, Objects, Params);
+	//GetWorld()->LineTraceMultiByObjectType(MultiHit, BulletStart, BulletEnd, Objects, Params);
+	
+	bool BulletTrace = GetWorld()->LineTraceSingleByObjectType(SingleHit, BulletStart, BulletEnd, Objects, Params);
+	
 
 	DrawDebugLine(GetWorld(), PlayerCharacter->GetFollowCamera()->GetComponentLocation(), (PlayerCharacter->GetFollowCamera()->GetComponentLocation() + (PlayerCharacter->GetFollowCamera()->GetForwardVector() * BulletDistance)), FColor::Green, false, 10, 0, 5);
 
-	for (auto Hit : MultiHit)
+	if (BulletTrace && IsValid(Cast<AWSNetProdCharacter>(SingleHit.Actor)))
 	{
-		//"MyCharacter's Name is %s"
-		UE_LOG(LogTemp, Warning, TEXT("ACTOR HIT %s"), *Hit.Actor->GetName());
-		
-		if (IsValid(Cast<AWSNetProdCharacter>(Hit.Actor)))
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, TEXT("player hit"));
-			
-			UE_LOG(LogTemp, Warning, TEXT("%s"), *Hit.Component->GetName());
-
-			// Create a damage event  
-			TSubclassOf<UDamageType> const ValidDamageTypeClass = TSubclassOf<UDamageType>(UDamageType::StaticClass());
-			FDamageEvent DamageEvent(ValidDamageTypeClass);
-			Cast<AWSNetProdCharacter>(Hit.Actor)->TakeDamage(Damage, DamageEvent, GetWorld()->GetFirstPlayerController(), this);
-	
-		}
+		Params.AddIgnoredComponent(Cast<AWSNetProdCharacter>(SingleHit.Actor)->GetCapsuleComponent());
+		GetWorld()->LineTraceSingleByObjectType(SingleHit, BulletStart, BulletEnd, Objects, Params);
+		UE_LOG(LogTemp, Warning, TEXT("%s"), *SingleHit.Component->GetName());
 	}
+	
+	/*for (auto Hit : MultiHit)
+	{
+		if (IsValid(Cast<AWSNetProdCharacter>(Hit.Actor))) // is it a player character?
+		{
+			Params.AddIgnoredComponent(Cast<AWSNetProdCharacter>(Hit.Actor)->GetCapsuleComponent());
+			GetWorld()->LineTraceMultiByObjectType(MultiHit, BulletStart, BulletEnd, Objects, Params);
 
-	MultiHit.Empty();
+			for (auto Hit : MultiHit)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("%s"), *Hit.Component->GetName());
+				break;
+			}
+			
+			Params.ClearIgnoredComponents();
+		}
+	}*/
+	
+	//MultiHit.Empty();
 	
 }
