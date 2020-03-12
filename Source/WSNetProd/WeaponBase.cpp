@@ -90,7 +90,7 @@ void AWeaponBase::FireBullet()
 		//bool SecondBulletTrace = GetWorld()->LineTraceSingleByObjectType(SingleHit, BulletStart, BulletEnd, Objects, Params); // Recast the same line
 		bool SecondBulletTrace = GetWorld()->LineTraceSingleByChannel(SingleHit, BulletStart, BulletEnd, ECC_Visibility, Params);
 		
-		if (SecondBulletTrace && IsValid(SingleHit.GetComponent())) // has the trace hit anything & is it a component?
+		if (SecondBulletTrace && IsValid(Cast<AWSNetProdCharacter>(SingleHit.GetComponent()->GetAttachmentRootActor()))) // has the trace hit anything & if there is a component, is it attached to the player?
 		{
 			UE_LOG(LogTemp, Warning, TEXT("%s"), *SingleHit.Component->GetName());
 		}

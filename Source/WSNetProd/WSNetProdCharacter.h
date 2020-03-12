@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "UserWidget.h"
+#include "Blueprint/UserWidget.h"
 #include "WSNetProdCharacter.generated.h"
 
 UCLASS(config=Game)
@@ -96,6 +98,17 @@ public:
 	/** Firing variable */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		bool bFiring;
+
+	/* Crosshair variables */
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		int CrosshairArrayMaxIndex;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		int CrosshairCurrentActiveArrayIndex;
+
+//	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+//		TArray<UUserWidget*> CrosshairArray;
+	
 
 protected:
 	// Called when the game starts or when spawned
