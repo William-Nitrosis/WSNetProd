@@ -15,6 +15,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
+#include "Blueprint/UserWidget.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AWSNetProdCharacter
@@ -148,6 +149,7 @@ void AWSNetProdCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	HandleSlotInput_Implementation();
+	//UE_LOG(LogTemp, Warning, TEXT("%f"), GetCurrentHealth());
 	
 }
 
@@ -249,6 +251,7 @@ void AWSNetProdCharacter::SetCurrentHealth(float healthValue)
 {
 	if (Role == ROLE_Authority)
 	{
+		UE_LOG(LogTemp, Display, TEXT("%s %f"), *this->GetName() ,CurrentHealth)
 		CurrentHealth = FMath::Clamp(healthValue, 0.f, MaxHealth);
 		OnHealthUpdate();
 	}
@@ -258,7 +261,7 @@ float AWSNetProdCharacter::TakeDamage(float DamageTaken, struct FDamageEvent con
 {
 	float damageApplied = CurrentHealth - DamageTaken;
 	SetCurrentHealth(damageApplied);
-	return damageApplied;
+	return DamageTaken;
 }
 
 void AWSNetProdCharacter::StartFiring()
@@ -278,4 +281,12 @@ void AWSNetProdCharacter::HandleSlotInput_Implementation()
 	{
 		CWeapon->HandleInput();
 	}
+}
+
+
+void AWSNetProdCharacter::DealDamage_Custom_Implementation(float someDEEPS, AActor* target) {
+
+	AWSNetProdCharacter* ptr = Cast<AWSNetProdCharacter>(target);
+	if(ptr)
+		ptr->SetCurrentHealth(CurrentHealth - someDEEPS);
 }

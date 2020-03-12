@@ -16,6 +16,9 @@ public:
 	// Sets default values for this pawn's properties
 	AWeaponBase();
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+		class USceneComponent* SceneRoot;
+
 	/** Gun mesh */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
 		class USkeletalMeshComponent* GunMesh;

@@ -17,8 +17,11 @@ AWeaponBase::AWeaponBase()
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
+	SceneRoot = CreateDefaultSubobject<USceneComponent>(TEXT("SceneRoot"));
+	SceneRoot->SetupAttachment(RootComponent);
+
 	GunMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("GunMesh"));
-	GunMesh->SetupAttachment(RootComponent);
+	GunMesh->SetupAttachment(SceneRoot);
 
 	BarrelParticleEmitterLocation = CreateDefaultSubobject<USceneComponent>(TEXT("BarrelParticleEmitterLocation"));
 	BarrelParticleEmitterLocation->SetupAttachment(GunMesh);
@@ -76,8 +79,6 @@ void AWeaponBase::FireBullet()
 	
 	Params.AddIgnoredActor(this);
 	Params.AddIgnoredActor(PlayerCharacter);
-
-	//GetWorld()->LineTraceMultiByObjectType(MultiHit, BulletStart, BulletEnd, Objects, Params);
 	
 	bool BulletTrace = GetWorld()->LineTraceSingleByObjectType(SingleHit, BulletStart, BulletEnd, Objects, Params);
 	
@@ -87,32 +88,21 @@ void AWeaponBase::FireBullet()
 	if (BulletTrace && IsValid(Cast<AWSNetProdCharacter>(SingleHit.Actor))) // Has the trace hit anything & Is the actor a player?
 	{
 		Params.AddIgnoredComponent(Cast<AWSNetProdCharacter>(SingleHit.Actor)->GetCapsuleComponent()); // Ignore the player capsule component so we can hit the hitboxs 
-		//bool SecondBulletTrace = GetWorld()->LineTraceSingleByObjectType(SingleHit, BulletStart, BulletEnd, Objects, Params); // Recast the same line
 		bool SecondBulletTrace = GetWorld()->LineTraceSingleByChannel(SingleHit, BulletStart, BulletEnd, ECC_Visibility, Params);
 		
 		if (SecondBulletTrace && IsValid(Cast<AWSNetProdCharacter>(SingleHit.GetComponent()->GetAttachmentRootActor()))) // has the trace hit anything & if there is a component, is it attached to the player?
 		{
 			UE_LOG(LogTemp, Warning, TEXT("%s"), *SingleHit.Component->GetName());
+		
+			FVector NormalImpulse;
+			FHitResult Hit;
+			//UGameplayStatics::ApplyPointDamage(SingleHit.Actor.Get(), Damage, NormalImpulse, Hit, UGameplayStatics::GetPlayerControllerFromID(GetWorld(), 0), this, UDamageType::StaticClass());
+
+			AWSNetProdCharacter* actor = Cast<AWSNetProdCharacter>(SingleHit.Actor.Get());
+			this->PlayerCharacter->DealDamage_Custom(1.0f, SingleHit.Actor.Get());
+			//actor->DealDamage(1.0f, )
 		}
 	}
 	
-	/*for (auto Hit : MultiHit)
-	{
-		if (IsValid(Cast<AWSNetProdCharacter>(Hit.Actor))) // is it a player character?
-		{
-			Params.AddIgnoredComponent(Cast<AWSNetProdCharacter>(Hit.Actor)->GetCapsuleComponent());
-			GetWorld()->LineTraceMultiByObjectType(MultiHit, BulletStart, BulletEnd, Objects, Params);
-
-			for (auto Hit : MultiHit)
-			{
-				UE_LOG(LogTemp, Warning, TEXT("%s"), *Hit.Component->GetName());
-				break;
-			}
-			
-			Params.ClearIgnoredComponents();
-		}
-	}*/
-	
-	//MultiHit.Empty();
 	
 }

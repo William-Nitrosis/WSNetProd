@@ -4,9 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "UserWidget.h"
-#include "Blueprint/UserWidget.h"
 #include "WSNetProdCharacter.generated.h"
+
+
+class UUserWidget;
+
+USTRUCT(BlueprintType)
+struct FCrosshair
+{
+	GENERATED_BODY()
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crosshair")
+		FString Name;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crosshair")
+		TSubclassOf<UUserWidget> WidgetFile;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crosshair")
+		UUserWidget* CrosshairsObjectWidgetArray;
+
+};
 
 UCLASS(config=Game)
 class AWSNetProdCharacter : public ACharacter
@@ -100,14 +117,25 @@ public:
 		bool bFiring;
 
 	/* Crosshair variables */
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crosshair")
+		TArray<FCrosshair> CrosshairArray;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crosshair")
 		int CrosshairArrayMaxIndex;
 	
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crosshair")
 		int CrosshairCurrentActiveArrayIndex;
 
-//	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
-//		TArray<UUserWidget*> CrosshairArray;
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crosshair")
+		UUserWidget* CrosshairActiveCrosshair;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crosshair")
+		bool bCrosshairVisable = true;
+
+
+	UFUNCTION(Server, Reliable)
+		void DealDamage_Custom(float someDEEPS, AActor* target);
+
 	
 
 protected:
@@ -143,7 +171,7 @@ protected:
 		float MaxHealth;
 
 	/** The player's current health. When reduced to 0, they are considered dead.*/
-	UPROPERTY(ReplicatedUsing = OnRep_CurrentHealth)
+	UPROPERTY(Replicated, ReplicatedUsing = OnRep_CurrentHealth)
 		float CurrentHealth;
 
 	/** RepNotify for changes made to current health.*/
@@ -163,6 +191,8 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 		void HandleSlotInput();
+
+
 
 protected:
 	// APawn interface
