@@ -24,6 +24,7 @@ AWeaponBase::AWeaponBase()
 	BarrelParticleEmitterLocation->SetupAttachment(GunMesh);
 
 	bCanFireGun = true;
+	
 }
 
 // Called when the game starts or when spawned
@@ -83,11 +84,16 @@ void AWeaponBase::FireBullet()
 
 	DrawDebugLine(GetWorld(), PlayerCharacter->GetFollowCamera()->GetComponentLocation(), (PlayerCharacter->GetFollowCamera()->GetComponentLocation() + (PlayerCharacter->GetFollowCamera()->GetForwardVector() * BulletDistance)), FColor::Green, false, 10, 0, 5);
 
-	if (BulletTrace && IsValid(Cast<AWSNetProdCharacter>(SingleHit.Actor)))
+	if (BulletTrace && IsValid(Cast<AWSNetProdCharacter>(SingleHit.Actor))) // Has the trace hit anything & Is the actor a player?
 	{
-		Params.AddIgnoredComponent(Cast<AWSNetProdCharacter>(SingleHit.Actor)->GetCapsuleComponent());
-		GetWorld()->LineTraceSingleByObjectType(SingleHit, BulletStart, BulletEnd, Objects, Params);
-		UE_LOG(LogTemp, Warning, TEXT("%s"), *SingleHit.Component->GetName());
+		Params.AddIgnoredComponent(Cast<AWSNetProdCharacter>(SingleHit.Actor)->GetCapsuleComponent()); // Ignore the player capsule component so we can hit the hitboxs 
+		//bool SecondBulletTrace = GetWorld()->LineTraceSingleByObjectType(SingleHit, BulletStart, BulletEnd, Objects, Params); // Recast the same line
+		bool SecondBulletTrace = GetWorld()->LineTraceSingleByChannel(SingleHit, BulletStart, BulletEnd, ECC_Visibility, Params);
+		
+		if (SecondBulletTrace && IsValid(SingleHit.GetComponent())) // has the trace hit anything & is it a component?
+		{
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *SingleHit.Component->GetName());
+		}
 	}
 	
 	/*for (auto Hit : MultiHit)
