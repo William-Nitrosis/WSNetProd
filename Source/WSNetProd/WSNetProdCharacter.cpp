@@ -290,3 +290,14 @@ void AWSNetProdCharacter::DealDamage_Custom_Implementation(float someDEEPS, AAct
 	if(ptr)
 		ptr->SetCurrentHealth(CurrentHealth - someDEEPS);
 }
+
+
+bool AWSNetProdCharacter::GetIsMoving()
+{
+	if (GetVelocity().Size() > 0) { return true; } else { return false; }
+}
+
+bool AWSNetProdCharacter::GetIsFiring()
+{
+	return bFiring;
+}

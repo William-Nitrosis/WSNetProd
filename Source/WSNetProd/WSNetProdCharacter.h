@@ -132,9 +132,21 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Crosshair")
 		bool bCrosshairVisable = true;
 
+	/* Crosshair functions */
+
+	UFUNCTION(BlueprintCallable, Category = "Crosshair")
+		bool GetIsMoving();
+
+	UFUNCTION(BlueprintCallable, Category = "Crosshair")
+		bool GetIsFiring();
+
+	
+
 
 	UFUNCTION(Server, Reliable)
 		void DealDamage_Custom(float someDEEPS, AActor* target);
+
+	
 
 	
 
