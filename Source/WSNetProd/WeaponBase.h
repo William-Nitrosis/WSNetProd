@@ -30,6 +30,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 		void HandleInput();
 
+	UFUNCTION()
+		FORCEINLINE int GetMagazineSize() const { return MagazineSize; }
+
 
 
 protected:

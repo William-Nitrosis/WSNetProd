@@ -16,6 +16,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "TimerManager.h"
 #include "Blueprint/UserWidget.h"
+#include "CollisionQueryParams.h"
+
 
 //////////////////////////////////////////////////////////////////////////
 // AWSNetProdCharacter
@@ -142,6 +144,8 @@ void AWSNetProdCharacter::BeginPlay()
 		FirstPersonGunActorSlot1->ToggleVisibility(false);
 		FirstPersonGunActorSlot2->ToggleVisibility(false);
 	}
+
+	ReloadGun(PlayerCharacter);
 }
 
 // Called every frame
@@ -219,7 +223,8 @@ void AWSNetProdCharacter::OnHealthUpdate()
 	//Client-specific functionality
 	if (IsLocallyControlled())
 	{
-		FString healthMessage = FString::Printf(TEXT("You now have %f health remaining."), CurrentHealth);
+		/*
+		 *FString healthMessage = FString::Printf(TEXT("You now have %f health remaining."), CurrentHealth);
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
 
 		if (CurrentHealth <= 0)
@@ -227,13 +232,16 @@ void AWSNetProdCharacter::OnHealthUpdate()
 			FString deathMessage = FString::Printf(TEXT("You have been killed."));
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, deathMessage);
 		}
+		*/
 	}
 
 	//Server-specific functionality
 	if (Role == ROLE_Authority)
 	{
+		/*
 		FString healthMessage = FString::Printf(TEXT("%s now has %f health remaining."), *GetFName().ToString(), CurrentHealth);
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, healthMessage);
+		*/
 	}
 
 	//Functions that occur on all machines. 
@@ -251,17 +259,20 @@ void AWSNetProdCharacter::SetCurrentHealth(float healthValue)
 {
 	if (Role == ROLE_Authority)
 	{
-		UE_LOG(LogTemp, Display, TEXT("%s %f"), *this->GetName() ,CurrentHealth)
-		CurrentHealth = FMath::Clamp(healthValue, 0.f, MaxHealth);
+		CurrentHealth = CurrentHealth - healthValue;
 		OnHealthUpdate();
 	}
 }
 
-float AWSNetProdCharacter::TakeDamage(float DamageTaken, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+void AWSNetProdCharacter::SetCurrentAmmo(float AmmoValue)
 {
-	float damageApplied = CurrentHealth - DamageTaken;
-	SetCurrentHealth(damageApplied);
-	return DamageTaken;
+	if (Role == ROLE_Authority)
+	{
+		CurrentAmmo = AmmoValue;
+		UE_LOG(LogTemp, Error, TEXT("%s RELOADED #####################"), *this->GetName());
+	}
+	
+	CurrentAmmo = AmmoValue;
 }
 
 void AWSNetProdCharacter::StartFiring()
@@ -284,11 +295,13 @@ void AWSNetProdCharacter::HandleSlotInput_Implementation()
 }
 
 
-void AWSNetProdCharacter::DealDamage_Custom_Implementation(float someDEEPS, AActor* target) {
-
+void AWSNetProdCharacter::ServerApplyDamage_Implementation(float someDEEPS, AActor* target)
+{
 	AWSNetProdCharacter* ptr = Cast<AWSNetProdCharacter>(target);
 	if(ptr)
-		ptr->SetCurrentHealth(CurrentHealth - someDEEPS);
+	{
+		ptr->SetCurrentHealth(someDEEPS);
+	}
 }
 
 
@@ -300,4 +313,35 @@ bool AWSNetProdCharacter::GetIsMoving()
 bool AWSNetProdCharacter::GetIsFiring()
 {
 	return bFiring;
+}
+
+void AWSNetProdCharacter::ServerLineTrace_Implementation(FVector LineTraceStart, FVector LineTraceEnd, AActor* SourceGun, AActor* SourcePlayer)
+{
+	FHitResult ServerSingleHit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(SourceGun);
+	Params.AddIgnoredActor(SourcePlayer);
+	
+	
+	bool ServerBulletTrace = GetWorld()->LineTraceSingleByChannel(ServerSingleHit, LineTraceStart, LineTraceEnd, ECC_Visibility, Params);
+
+
+	if (ServerBulletTrace && IsValid(Cast<AWSNetProdCharacter>(ServerSingleHit.GetComponent()->GetAttachmentRootActor()))) // has the trace hit anything & if there is a component, is it attached to the player?
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Server hit: %s"), *ServerSingleHit.GetActor()->GetName());
+		ServerApplyDamage(1.0f, ServerSingleHit.Actor.Get());
+	}
+}
+
+void AWSNetProdCharacter::ReloadGun_Implementation(AActor* ReloadTargetPlayer)
+{
+	AWeaponBase* gun = Cast<AWeaponBase>(CurrentlyEquipped->GetChildActor());
+
+	AWSNetProdCharacter* reloadtarget = Cast<AWSNetProdCharacter>(ReloadTargetPlayer);
+
+	if (reloadtarget != nullptr)
+	{
+		UE_LOG(LogTemp, Error, TEXT("%s tried reloading #####################"), *reloadtarget->GetName());
+		reloadtarget->SetCurrentAmmo(30);
+	}
 }

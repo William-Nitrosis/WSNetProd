@@ -92,15 +92,20 @@ void AWeaponBase::FireBullet()
 		
 		if (SecondBulletTrace && IsValid(Cast<AWSNetProdCharacter>(SingleHit.GetComponent()->GetAttachmentRootActor()))) // has the trace hit anything & if there is a component, is it attached to the player?
 		{
-			UE_LOG(LogTemp, Warning, TEXT("%s"), *SingleHit.Component->GetName());
-		
+			// successfully hit a player character with a local cast
+			UE_LOG(LogTemp, Warning, TEXT("Client hit: %s"), *SingleHit.GetActor()->GetName());
+
+			// tell the server to shoot a trace to apply damage
+			this->PlayerCharacter->ServerLineTrace(BulletStart, BulletEnd, this, PlayerCharacter);
+
+			/*
 			FVector NormalImpulse;
 			FHitResult Hit;
-			//UGameplayStatics::ApplyPointDamage(SingleHit.Actor.Get(), Damage, NormalImpulse, Hit, UGameplayStatics::GetPlayerControllerFromID(GetWorld(), 0), this, UDamageType::StaticClass());
-
+			
 			AWSNetProdCharacter* actor = Cast<AWSNetProdCharacter>(SingleHit.Actor.Get());
-			this->PlayerCharacter->DealDamage_Custom(1.0f, SingleHit.Actor.Get());
-			//actor->DealDamage(1.0f, )
+			this->PlayerCharacter->ServerApplyDamage(1.0f, SingleHit.Actor.Get());
+			*/
+			
 		}
 	}
 	

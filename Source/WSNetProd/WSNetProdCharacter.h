@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine.h"
 #include "GameFramework/Character.h"
 #include "WSNetProdCharacter.generated.h"
 
@@ -60,13 +61,16 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Health")
 		FORCEINLINE float GetCurrentHealth() const { return CurrentHealth; }
 
+	/** Getter for Current Health.*/
+	UFUNCTION(BlueprintPure)
+		FORCEINLINE int GetCurrentAmmo() const { return CurrentAmmo; }
+
 	/** Setter for Current Health. Clamps the value between 0 and MaxHealth and calls OnHealthUpdate. Should only be called on the server.*/
 	UFUNCTION(BlueprintCallable, Category = "Health")
 		void SetCurrentHealth(float healthValue);
 
-	/** Event for taking damage. Overridden from APawn.*/
-	UFUNCTION(BlueprintCallable, Category = "Health")
-		float TakeDamage(float DamageTaken, struct FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	UFUNCTION(BlueprintCallable)
+		void SetCurrentAmmo(float AmmoValue);
 
 	/** First person mesh */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -144,7 +148,10 @@ public:
 
 
 	UFUNCTION(Server, Reliable)
-		void DealDamage_Custom(float someDEEPS, AActor* target);
+		void ServerApplyDamage(float someDEEPS, AActor* target);
+
+	UFUNCTION(Server, Reliable)
+		void ServerLineTrace(FVector LineTraceStart, FVector LineTraceEnd, AActor* SourceGun, AActor* SourcePlayer);
 
 	
 
@@ -193,6 +200,9 @@ protected:
 	/** Response to health being updated. Called on the server immediately after modification, and on clients in response to a RepNotify*/
 	void OnHealthUpdate();
 
+	UPROPERTY(Replicated)
+		int CurrentAmmo;
+
 	/** Function for beginning weapon fire.*/
 	UFUNCTION(BlueprintCallable, Category = "Gameplay")
 		void StartFiring();
@@ -203,6 +213,9 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 		void HandleSlotInput();
+
+	UFUNCTION(Server, Reliable)
+		void ReloadGun(AActor* ReloadTargetPlayer);
 
 
 
