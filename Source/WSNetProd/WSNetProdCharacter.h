@@ -65,12 +65,17 @@ public:
 	UFUNCTION(BlueprintPure)
 		FORCEINLINE int GetCurrentAmmo() const { return CurrentAmmo; }
 
+	/** Getter for reloading.*/
+	UFUNCTION(BlueprintPure)
+		FORCEINLINE bool GetReloading() const { return bReloading; }
+
+	/** Setter for reloading.*/
+	UFUNCTION(BlueprintCallable)
+		void SetReloading(bool newReloading) { bReloading = newReloading; }
+
 	/** Setter for Current Health. Clamps the value between 0 and MaxHealth and calls OnHealthUpdate. Should only be called on the server.*/
 	UFUNCTION(BlueprintCallable, Category = "Health")
 		void SetCurrentHealth(float healthValue);
-
-	UFUNCTION(BlueprintCallable)
-		void SetCurrentAmmo(float AmmoValue);
 
 	/** First person mesh */
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite)
@@ -153,6 +158,9 @@ public:
 	UFUNCTION(Server, Reliable)
 		void ServerLineTrace(FVector LineTraceStart, FVector LineTraceEnd, AActor* SourceGun, AActor* SourcePlayer);
 
+	UFUNCTION(Server, Reliable, BlueprintCallable)
+		void SetCurrentAmmo(float AmmoValue);
+
 	
 
 	
@@ -216,6 +224,12 @@ protected:
 
 	UFUNCTION(Server, Reliable)
 		void ReloadGun(AActor* ReloadTargetPlayer);
+
+	UFUNCTION(Server, Reliable)
+		void DecreaseAmmo(AActor* TargetPlayer);
+
+	UPROPERTY()
+		bool bReloading;
 
 
 

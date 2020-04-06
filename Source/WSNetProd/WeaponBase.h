@@ -33,6 +33,9 @@ public:
 	UFUNCTION()
 		FORCEINLINE int GetMagazineSize() const { return MagazineSize; }
 
+	UFUNCTION()
+		FORCEINLINE int GetDamage() const { return Damage; }
+
 
 
 protected:
@@ -65,6 +68,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gun stats")
 		float BulletDistance = 5000.0f;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Gun stats")
+		int CurrentAmmo;
+
 	UFUNCTION(BlueprintCallable)
 		void StopFire();
 
@@ -74,6 +80,8 @@ protected:
 	bool bCanFireGun = true;
 
 	AWSNetProdCharacter* PlayerCharacter;
+
+
 
 
 public:	

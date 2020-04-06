@@ -42,7 +42,12 @@ void AWeaponBase::BeginPlay()
 void AWeaponBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	CurrentAmmo = Cast<AWSNetProdCharacter>(PlayerCharacter)->GetCurrentAmmo();
 
+	if (CurrentAmmo <= 0)
+	{
+		PlayerCharacter->ReloadGun_Implementation(PlayerCharacter);
+	}
 }
 
 // Called to bind functionality to input
@@ -109,5 +114,6 @@ void AWeaponBase::FireBullet()
 		}
 	}
 	
-	
+	// decrease ammo count
+	this->PlayerCharacter->DecreaseAmmo_Implementation(PlayerCharacter);
 }

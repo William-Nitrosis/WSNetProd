@@ -216,6 +216,7 @@ void AWSNetProdCharacter::GetLifetimeReplicatedProps(TArray <FLifetimeProperty> 
 
 	//Replicate current health.
 	DOREPLIFETIME(AWSNetProdCharacter, CurrentHealth);
+	DOREPLIFETIME(AWSNetProdCharacter, CurrentAmmo);
 }
 
 void AWSNetProdCharacter::OnHealthUpdate()
@@ -264,7 +265,7 @@ void AWSNetProdCharacter::SetCurrentHealth(float healthValue)
 	}
 }
 
-void AWSNetProdCharacter::SetCurrentAmmo(float AmmoValue)
+void AWSNetProdCharacter::SetCurrentAmmo_Implementation(float AmmoValue)
 {
 	if (Role == ROLE_Authority)
 	{
@@ -288,7 +289,7 @@ void AWSNetProdCharacter::StopFiring()
 void AWSNetProdCharacter::HandleSlotInput_Implementation()
 {
 	AWeaponBase* CWeapon = Cast<AWeaponBase>(CurrentlyEquipped->GetChildActor());
-	if (bFiring && CWeapon != nullptr)
+	if (bFiring && CWeapon != nullptr && !bReloading)
 	{
 		CWeapon->HandleInput();
 	}
@@ -329,12 +330,14 @@ void AWSNetProdCharacter::ServerLineTrace_Implementation(FVector LineTraceStart,
 	if (ServerBulletTrace && IsValid(Cast<AWSNetProdCharacter>(ServerSingleHit.GetComponent()->GetAttachmentRootActor()))) // has the trace hit anything & if there is a component, is it attached to the player?
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Server hit: %s"), *ServerSingleHit.GetActor()->GetName());
-		ServerApplyDamage(1.0f, ServerSingleHit.Actor.Get());
-	}
+		AWeaponBase* CurrentlyEquippedGun = Cast<AWeaponBase>(CurrentlyEquipped->GetChildActor());
+		ServerApplyDamage(CurrentlyEquippedGun->GetDamage(), ServerSingleHit.Actor.Get());
+	}	
 }
 
 void AWSNetProdCharacter::ReloadGun_Implementation(AActor* ReloadTargetPlayer)
 {
+	bReloading = true;
 	AWeaponBase* gun = Cast<AWeaponBase>(CurrentlyEquipped->GetChildActor());
 
 	AWSNetProdCharacter* reloadtarget = Cast<AWSNetProdCharacter>(ReloadTargetPlayer);
@@ -342,6 +345,14 @@ void AWSNetProdCharacter::ReloadGun_Implementation(AActor* ReloadTargetPlayer)
 	if (reloadtarget != nullptr)
 	{
 		UE_LOG(LogTemp, Error, TEXT("%s tried reloading #####################"), *reloadtarget->GetName());
-		reloadtarget->SetCurrentAmmo(30);
+		AWeaponBase* CurrentlyEquippedGun = Cast<AWeaponBase>(CurrentlyEquipped->GetChildActor());
+		reloadtarget->SetCurrentAmmo_Implementation(CurrentlyEquippedGun->GetMagazineSize());
 	}
 }
+
+void AWSNetProdCharacter::DecreaseAmmo_Implementation(AActor* TargetPlayer)
+{
+	AWSNetProdCharacter* AmmoTargetPlayer = Cast<AWSNetProdCharacter>(TargetPlayer);
+	AmmoTargetPlayer->SetCurrentAmmo_Implementation(CurrentAmmo - 1);
+}
+
